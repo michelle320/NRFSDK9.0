@@ -152,6 +152,13 @@ static volatile bool             m_whitelist_temporarily_disabled = false;      
 static bool                      m_memory_access_in_progress = false;              /**< Flag to keep track of ongoing operations on persistent memory. */
 
 
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,
+#include "ble_bp_c.h"
+static uint16_t                  m_conn_handle_central_bp = BLE_CONN_HANDLE_INVALID;
+ble_gap_addr_t                   m_bp_peripheral_address;
+static ble_bp_c_t               m_ble_bp_c; 
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>....
+
 /**
  * @brief Connection parameters requested for connection.
  */
@@ -260,8 +267,16 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
             {
                 m_conn_handle_central_rsc = p_event->event_param.p_gap_param->conn_handle;
             }
+						//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+						if(memcmp(&m_bp_peripheral_address, &p_event->event_param.p_gap_param->params.connected.peer_addr, sizeof(ble_gap_addr_t)) == 0)
+            {
+                m_conn_handle_central_bp = p_event->event_param.p_gap_param->conn_handle;
+            }
+						//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             if((m_conn_handle_central_rsc != BLE_CONN_HANDLE_INVALID) &&
-               (m_conn_handle_central_hrs != BLE_CONN_HANDLE_INVALID))
+               (m_conn_handle_central_hrs != BLE_CONN_HANDLE_INVALID) &&
+						   (m_conn_handle_central_bp != BLE_CONN_HANDLE_INVALID)
+						  )
             {
                 LEDS_OFF(CENTRAL_SCANNING_LED);
             }
@@ -269,6 +284,7 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
             m_dm_device_handle = (*p_handle);
 
             // Discover peer's services. 
+						//printf("call ble_db_discovery_start,conn_handle=0x%x\r\n",p_event->event_param.p_gap_param->conn_handle);
             err_code = ble_db_discovery_start(&m_ble_db_discovery,
                                               p_event->event_param.p_gap_param->conn_handle);
             APP_ERROR_CHECK(err_code);
@@ -296,6 +312,12 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
              {
                  m_conn_handle_central_rsc = BLE_CONN_HANDLE_INVALID;
              }
+						 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+						 else if (p_event->event_param.p_gap_param->conn_handle == m_conn_handle_central_bp)
+						 {
+							 m_conn_handle_central_bp = BLE_CONN_HANDLE_INVALID;
+						 }
+						 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
              
             if((m_conn_handle_central_rsc == BLE_CONN_HANDLE_INVALID) &&
                (m_conn_handle_central_hrs == BLE_CONN_HANDLE_INVALID))
@@ -470,6 +492,7 @@ static void gap_params_init(void)
  *
  * @param[in]   p_ble_evt   Bluetooth stack event.
  */
+bool is_done = 1;
 static void on_ble_central_evt(ble_evt_t * p_ble_evt)
 {
     uint32_t                err_code;
@@ -510,19 +533,26 @@ static void on_ble_central_evt(ble_evt_t * p_ble_evt)
                     UUID16_EXTRACT(&extracted_uuid,&type_data.p_data[u_index * UUID16_SIZE]);
 
                     APPL_LOG("\t[APPL]: %x\r\n",extracted_uuid);
-
-                    if(extracted_uuid == BLE_UUID_HEART_RATE_SERVICE || extracted_uuid == BLE_UUID_RUNNING_SPEED_AND_CADENCE)
+                    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                    if((/*extracted_uuid == BLE_UUID_HEART_RATE_SERVICE || extracted_uuid == BLE_UUID_RUNNING_SPEED_AND_CADENCE ||*/ extracted_uuid == BLE_UUID_BLOOD_PRESSURE_SERVICE) && (is_done))
                     {
-
+												is_done = 0;
                         if(extracted_uuid == BLE_UUID_HEART_RATE_SERVICE)
                         {
-                            printf("HRS found\n\r");
+                            //printf("HRS found\n\r");
                             memcpy(&m_hrs_peripheral_address, &p_gap_evt->params.adv_report.peer_addr,sizeof(ble_gap_addr_t));
+													  
                         }
                         if(extracted_uuid == BLE_UUID_RUNNING_SPEED_AND_CADENCE)
                         {
-                            printf("RSC found\n\r");
+                            //printf("RSC found\n\r");
                             memcpy(&m_rscs_peripheral_address, &p_gap_evt->params.adv_report.peer_addr,sizeof(ble_gap_addr_t));
+                        }
+												
+												 if(extracted_uuid == BLE_UUID_BLOOD_PRESSURE_SERVICE)
+                        {
+                            //printf("BP found\n\r");
+                            memcpy(&m_bp_peripheral_address, &p_gap_evt->params.adv_report.peer_addr,sizeof(ble_gap_addr_t));
                         }
 
                         m_scan_param.selective = 0; 
@@ -539,7 +569,10 @@ static void on_ble_central_evt(ble_evt_t * p_ble_evt)
                             APPL_LOG("[APPL]: Connection Request Failed, reason %d\r\n", err_code);
                         }
                         break;
+												
                     }
+										 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
+										
                 }
             }
             break;
@@ -663,12 +696,17 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 {
     if((p_ble_evt->evt.gap_evt.params.connected.role == BLE_GAP_ROLE_CENTRAL) ||
        (m_conn_handle_central_hrs == p_ble_evt->evt.gap_evt.conn_handle) ||
-       (m_conn_handle_central_rsc == p_ble_evt->evt.gap_evt.conn_handle))
+       (m_conn_handle_central_rsc == p_ble_evt->evt.gap_evt.conn_handle) ||
+       (m_conn_handle_central_bp == p_ble_evt->evt.gap_evt.conn_handle) 
+		  )
     {
         dm_ble_evt_handler(p_ble_evt);
         ble_db_discovery_on_ble_evt(&m_ble_db_discovery, p_ble_evt);
-        ble_hrs_c_on_ble_evt(&m_ble_hrs_c, p_ble_evt);
-        ble_rscs_c_on_ble_evt(&m_ble_rsc_c, p_ble_evt);
+			  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        //ble_hrs_c_on_ble_evt(&m_ble_hrs_c, p_ble_evt);
+        //ble_rscs_c_on_ble_evt(&m_ble_rsc_c, p_ble_evt);
+			  ble_bp_c_on_ble_evt(&m_ble_bp_c, p_ble_evt);
+			  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         bsp_btn_ble_on_ble_evt(p_ble_evt);
         on_ble_central_evt(p_ble_evt);
     }
@@ -779,29 +817,31 @@ static void device_manager_init(bool erase_bonds)
 
 /**@brief Heart Rate Collector Handler.
  */
-static void hrs_c_evt_handler(ble_hrs_c_t * p_hrs_c, ble_hrs_c_evt_t * p_hrs_c_evt)
+//static
+void hrs_c_evt_handler(ble_hrs_c_t * p_hrs_c, ble_hrs_c_evt_t * p_hrs_c_evt)
 {
+	  //printf("hrs_c_evt_handler\r\n");
+	
     uint32_t err_code;
-
+  
     switch (p_hrs_c_evt->evt_type)
     {
         case BLE_HRS_C_EVT_DISCOVERY_COMPLETE:
             // Initiate bonding.
-            err_code = dm_security_setup_req(&m_dm_device_handle);
-            APP_ERROR_CHECK(err_code);
+            //err_code = dm_security_setup_req(&m_dm_device_handle);
+				    //printf("error=%x\r\n",err_code);
+            //APP_ERROR_CHECK(err_code);
 
             // Heart rate service discovered. Enable notification of Heart Rate Measurement.
             err_code = ble_hrs_c_hrm_notif_enable(p_hrs_c);
+				    //printf("error=%x\r\n",err_code);
             APP_ERROR_CHECK(err_code);
-
-            printf("Heart rate service discovered \r\n");
+            //printf("Heart rate service discovered \r\n");
             break;
-
         case BLE_HRS_C_EVT_HRM_NOTIFICATION:
         {
             APPL_LOG("[APPL]: HR Measurement received %d \r\n", p_hrs_c_evt->params.hrm.hr_value);
-
-            printf("Heart Rate = %d\r\n", p_hrs_c_evt->params.hrm.hr_value);
+            //printf("Heart Rate = %d\r\n", p_hrs_c_evt->params.hrm.hr_value);
             err_code = ble_hrs_heart_rate_measurement_send(&m_hrs, p_hrs_c_evt->params.hrm.hr_value);
             if ((err_code != NRF_SUCCESS) &&
                 (err_code != NRF_ERROR_INVALID_STATE) &&
@@ -817,6 +857,7 @@ static void hrs_c_evt_handler(ble_hrs_c_t * p_hrs_c, ble_hrs_c_evt_t * p_hrs_c_e
         default:
             break;
     }
+		
 }
 
 
@@ -837,14 +878,14 @@ static void rscs_c_evt_handler(ble_rscs_c_t * p_rsc_c, ble_rscs_c_evt_t * p_rsc_
             err_code = ble_rscs_c_rsc_notif_enable(p_rsc_c);
             APP_ERROR_CHECK(err_code);
 
-            printf("Running Speed and Cadence service discovered \r\n");
+            //printf("Running Speed and Cadence service discovered \r\n");
             break;
 
         case BLE_RSCS_C_EVT_RSC_NOTIFICATION:
         {
-            printf("\r\n");
+            //printf("\r\n");
             APPL_LOG("[APPL]: RSC Measurement received %d \r\n", p_rsc_c_evt->params.rsc.inst_speed);
-            printf("Speed      = %d\r\n", p_rsc_c_evt->params.rsc.inst_speed);
+            //printf("Speed      = %d\r\n", p_rsc_c_evt->params.rsc.inst_speed);
             
             ble_rscs_meas_t rscs_measurment;
             rscs_measurment.is_inst_stride_len_present = p_rsc_c_evt->params.rsc.is_inst_stride_len_present;
@@ -873,6 +914,80 @@ static void rscs_c_evt_handler(ble_rscs_c_t * p_rsc_c, ble_rscs_c_evt_t * p_rsc_
     }
 }
 
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
+//#include "ble_bp_c.h"
+void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt)
+{
+	uint32_t err_code;
+    switch (p_bp_c_evt->evt_type)
+    {
+        case BLE_BP_C_EVT_DISCOVERY_COMPLETE:
+				  bp_log("BLE_BP_C_EVT_DISCOVERY_COMPLETE\r\n");
+				  //printf("abcdefghijklmnopqrstuvwxyz\r\n");
+				 //7err_code = dm_security_setup_req(&m_dm_device_handle);
+				 //err_code = ble_bp_c_test_notif_enable(p_bp_c);
+				 err_code = ble_bp_c_cuff_notif_enable(p_bp_c);
+				 err_code = ble_bp_c_mea_notif_enable(p_bp_c);
+				
+				  //printf("ble_bp_c_test_notif_enable: err_code=%d\r\n",err_code);
+         // APP_ERROR_CHECK(err_code);
+					/*
+            // Initiate bonding.
+            err_code = dm_security_setup_req(&m_dm_device_handle);
+            APP_ERROR_CHECK(err_code);
+
+            // Heart rate service discovered. Enable notification of Heart Rate Measurement.
+            err_code = ble_hrs_c_hrm_notif_enable(p_hrs_c);
+            APP_ERROR_CHECK(err_code);
+
+            printf("Heart rate service discovered \r\n");
+        */  
+				break;
+
+        case BLE_BP_C_EVT_MEA_NOTIFICATION:
+        {
+					//printf("BLE_BP_C_EVT_HRM_NOTIFICATION\r\n");
+					/*
+            APPL_LOG("[APPL]: HR Measurement received %d \r\n", p_hrs_c_evt->params.hrm.hr_value);
+
+            printf("Heart Rate = %d\r\n", p_hrs_c_evt->params.hrm.hr_value);
+            err_code = ble_hrs_heart_rate_measurement_send(&m_hrs, p_hrs_c_evt->params.hrm.hr_value);
+            if ((err_code != NRF_SUCCESS) &&
+                (err_code != NRF_ERROR_INVALID_STATE) &&
+                (err_code != BLE_ERROR_NO_TX_BUFFERS) &&
+                (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
+                )
+            {
+                APP_ERROR_HANDLER(err_code);
+            }
+					*/
+            break;
+				}
+				 case BLE_BP_C_EVT_CUFF_NOTIFICATION:
+				 {
+					 	//printf("BLE_BP_C_EVT_CUFF_NOTIFICATION\r\n");
+					break;
+				 }
+
+        default:
+            break;
+    }
+
+	
+}
+
+static void bp_c_init(void)
+{
+   // ble_hrs_c_init_t hrs_c_init_obj;
+
+    //hrs_c_init_obj.evt_handler = hrs_c_evt_handler;
+
+    uint32_t err_code = ble_bp_c_init(&m_ble_bp_c, bp_c_evt_handler);
+    APP_ERROR_CHECK(err_code);
+}
+
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 /**
  * @brief Heart rate collector initialization.
  */
@@ -1166,12 +1281,14 @@ int main(void)
     ble_stack_init();
     device_manager_init(erase_bonds);
     db_discovery_init();
-    hrs_c_init();
-    rscs_c_init();
-    
+    //hrs_c_init();
+   // rscs_c_init();
+	//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	  bp_c_init();
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     gap_params_init();
     services_init();
-    advertising_init();
+    //advertising_init();
     conn_params_init();
 
     // Start scanning for peripherals and initiate connection
@@ -1179,12 +1296,12 @@ int main(void)
     scan_start();
     
     // Start advertising.
-    err_code = ble_advertising_start(BLE_ADV_MODE_FAST);
-    APP_ERROR_CHECK(err_code);
+    //err_code = ble_advertising_start(BLE_ADV_MODE_FAST);
+    //APP_ERROR_CHECK(err_code);
     
     for (;; )
     {
-        power_manage();
+       // power_manage();
     }
 }
 

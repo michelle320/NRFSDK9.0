@@ -85,7 +85,7 @@ static uint32_t registered_handler_set(const ble_uuid_t * const       p_srv_uuid
         m_registered_handlers[m_num_of_handlers_reg].evt_handler = p_evt_handler;
 
         m_num_of_handlers_reg++;
-
+				//printf("m_num_of_handlers_reg=%d\r\n",m_num_of_handlers_reg);
         return NRF_SUCCESS;
     }
     else
@@ -104,6 +104,7 @@ static void pending_user_evts_send(void)
     for (i = 0; i < m_num_of_handlers_reg; i++)
     {
         // Pass the event to the corresponding event handler.
+			  //printf("call m_pending_user_evts[%d].evt_handler\r\n",i);
         m_pending_user_evts[i].evt_handler(&(m_pending_user_evts[i].evt));
     }
     
@@ -125,6 +126,7 @@ static void pending_user_evts_send(void)
 static void discovery_error_evt_trigger(ble_db_discovery_t * const p_db_discovery,
                                         uint32_t                   err_code)
 {
+	//printf("discovery_error_evt_trigger\r\n");
     ble_db_discovery_evt_handler_t p_evt_handler;
     ble_db_discovery_srv_t       * p_srv_being_discovered;
 
@@ -181,10 +183,10 @@ static void discovery_complete_evt_trigger(ble_db_discovery_t * const p_db_disco
     p_srv_being_discovered = &(p_db_discovery->services[p_db_discovery->curr_srv_ind]);
 
     p_evt_handler = registered_handler_get(&(p_srv_being_discovered->srv_uuid));
-
-    if (p_evt_handler != NULL)
+	  if (p_evt_handler != NULL)
     {
-        if (m_pending_usr_evt_index < DB_DISCOVERY_MAX_USERS)
+			
+	      if (m_pending_usr_evt_index < DB_DISCOVERY_MAX_USERS)
         {
             // Insert an event into the pending event list.
             m_pending_user_evts[m_pending_usr_evt_index].evt.conn_handle =
@@ -192,6 +194,7 @@ static void discovery_complete_evt_trigger(ble_db_discovery_t * const p_db_disco
 
             if (is_srv_found)
             {
+							
                 m_pending_user_evts[m_pending_usr_evt_index].evt.evt_type =
                     BLE_DB_DISCOVERY_COMPLETE;
 
@@ -215,6 +218,8 @@ static void discovery_complete_evt_trigger(ble_db_discovery_t * const p_db_disco
             }
             else
             {
+							//printf("m_pending_usr_evt_index=%d,but > %d \r\n",m_pending_usr_evt_index, m_num_of_handlers_reg);
+							//pending_user_evts_send();
                 // Too many events pending. Do nothing. (Ideally this should not happen.)
             }
         }
@@ -253,9 +258,11 @@ static void on_srv_disc_completion(ble_db_discovery_t * p_db_discovery)
         // discovery is about to start.
         p_srv_being_discovered->char_count = 0;
 
-        DB_LOG("[DB]: Starting discovery of service with UUID 0x%x for Connection handle %d\r\n",
-               p_srv_being_discovered->srv_uuid.uuid, p_db_discovery->conn_handle);
-
+        //DB_LOG("[DB]: Starting discovery of service with UUID 0x%x for Connection handle %d\r\n",
+        //       p_srv_being_discovered->srv_uuid.uuid, p_db_discovery->conn_handle);
+				//printf("[DB]: Starting discovery of service with UUID 0x%x for Connection handle %d\r\n",
+        //       p_srv_being_discovered->srv_uuid.uuid, p_db_discovery->conn_handle);
+				
         uint32_t err_code;
 
         err_code = sd_ble_gattc_primary_services_discover
@@ -606,7 +613,7 @@ static void on_characteristic_discovery_rsp(ble_db_discovery_t * const    p_db_d
         {
             p_srv_being_discovered->charateristics[i].characteristic =
                 p_char_disc_rsp_evt->chars[j];
-
+					//printf("DB: uuid=0x%x\r\n",p_srv_being_discovered->charateristics[i].characteristic.uuid.uuid);
             p_srv_being_discovered->charateristics[i].cccd_handle = BLE_GATT_HANDLE_INVALID;
         }
         
@@ -671,7 +678,10 @@ static void on_characteristic_discovery_rsp(ble_db_discovery_t * const    p_db_d
             DB_LOG("[DB]: Discovery of service with UUID 0x%x completed with success for Connection"
                    " handle %d\r\n", p_srv_being_discovered->srv_uuid.uuid,
                    p_db_discovery->conn_handle);
-
+						//printf("[DB]: Discovery of service with UUID 0x%x completed with success for Connection"
+            //       " handle %d\r\n", p_srv_being_discovered->srv_uuid.uuid,
+            //       p_db_discovery->conn_handle);
+						
             discovery_complete_evt_trigger(p_db_discovery, true);
 
             on_srv_disc_completion(p_db_discovery);
@@ -679,6 +689,45 @@ static void on_characteristic_discovery_rsp(ble_db_discovery_t * const    p_db_d
     }
 }
 
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#include "ble_hrs_c.h"
+#include "ble_bp_c.h"
+extern void hrs_c_evt_handler(ble_hrs_c_t * p_hrs_c, ble_hrs_c_evt_t * p_hrs_c_evt);
+extern void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt);
+ble_bp_c_t neotmp;
+ble_bp_c_evt_t neoevt;	 
+static void neo_discovery_complete_evt_trigger()
+{
+	bp_log("neo_discovery_complete_evt_trigger\r\n");
+	/*
+	 ble_hrs_c_t tmp;
+	 tmp.conn_handle = 0x0;
+	 tmp.hrm_cccd_handle = 0x47;
+	 tmp.evt_handler = hrs_c_evt_handler;
+	 tmp.hrm_handle = 0x46;
+	 ble_hrs_c_evt_t evt;
+   evt.evt_type = BLE_HRS_C_EVT_DISCOVERY_COMPLETE;
+	
+	hrs_c_evt_handler(&tmp, &evt);
+	*/
+
+  // ble_bp_c_t tmp;
+	 neotmp.conn_handle = BLE_BP_CONN_HANDLE;
+	 neotmp.bp_CUFF_cccd_handle = BLE_CUFF_CCCD_HANDLE;
+	 neotmp.evt_handler = bp_c_evt_handler;
+	 neotmp.bp_CUFF_handle = BLE_CUFF_HANDLE;
+	 neotmp.bp_MEA_cccd_handle = BLE_BP_MEASUREMENT_CCCD_HANDLE;
+	 neotmp.bp_MEA_handle = BLE_BP_MEASUREMENT_HANDLE;
+   neoevt.evt_type = BLE_BP_C_EVT_DISCOVERY_COMPLETE;
+	 //ble_bp_c_evt_t evt;
+	bp_c_evt_handler(&neotmp, &neoevt);
+	
+   //mp_ble_hrs_c->evt_handler(mp_ble_hrs_c, &evt);
+}
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+bool is_BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP_done = 1;
+bool is_BLE_GATTC_EVT_CHAR_DISC_RSP_done = 1;
+bool is_BLE_GATTC_EVT_DESC_DISC_RSP_done = 1;
 
 /**@brief     Function for handling descriptor discovery response.
  *
@@ -714,6 +763,7 @@ static void on_descriptor_discovery_rsp(ble_db_discovery_t * const    p_db_disco
                )
             {
                 p_char_being_discovered->cccd_handle = p_desc_disc_rsp_evt->descs[i].handle;
+							  bp_log("[DB] p_char_being_discovered->cccd_handle=0x%x\r\n", p_char_being_discovered->cccd_handle);
 
                 break;
             }
@@ -752,13 +802,26 @@ static void on_descriptor_discovery_rsp(ble_db_discovery_t * const    p_db_disco
 
     if (raise_discov_complete)
     {
+			/*
+			 is_BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP_done = 0;
+       is_BLE_GATTC_EVT_CHAR_DISC_RSP_done = 0;
+       is_BLE_GATTC_EVT_DESC_DISC_RSP_done = 0;
+*/
         DB_LOG("[DB]: Discovery of service with UUID 0x%x completed with success for Connection"
                "handle %d\r\n", p_srv_being_discovered->srv_uuid.uuid,
                p_db_discovery->conn_handle);
-
-        discovery_complete_evt_trigger(p_db_discovery, true);
-
+ bp_log("[DB]: Discovery of service with UUID 0x%x completed with success for Connection"
+               "handle %d\r\n", p_srv_being_discovered->srv_uuid.uuid,
+               p_db_discovery->conn_handle);
+			  neo_discovery_complete_evt_trigger();
+       // discovery_complete_evt_trigger(p_db_discovery, true);
+       
         on_srv_disc_completion(p_db_discovery);
+			
+			//
+			
+			
+			//
     }
 }
 
@@ -852,6 +915,7 @@ uint32_t ble_db_discovery_start(ble_db_discovery_t * const p_db_discovery,
     err_code = sd_ble_gattc_primary_services_discover(p_db_discovery->conn_handle,
                                                       SRV_DISC_START_HANDLE,
                                                       &(p_srv_being_discovered->srv_uuid));
+		//printf("call sd_ble_gattc_primary_services_discover,p_db_discovery->conn_handle=0x%x, error=0x%x\r\n",p_db_discovery->conn_handle,err_code);																									
     if (err_code != NRF_SUCCESS)
     {
         return err_code;
@@ -875,28 +939,42 @@ void ble_db_discovery_on_ble_evt(ble_db_discovery_t * const p_db_discovery,
     {
         return;
     }
-
+    //printf("p_ble_evt->header.evt_id=0x%x\r\n",p_ble_evt->header.evt_id);
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
+					 //printf("BLE_GAP_EVT_CONNECTED\r\n");
             p_db_discovery->conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             break;
         
         case BLE_GAP_EVT_DISCONNECTED:
+					 //printf("BLE_GAP_EVT_DISCONNECTED\r\n");
             memset(p_db_discovery, 0, sizeof(ble_db_discovery_t));
             p_db_discovery->conn_handle = BLE_CONN_HANDLE_INVALID;
             break;
 
         case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
+					  bp_log("BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP\r\n");
+				    if (is_BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP_done){
             on_primary_srv_discovery_rsp(p_db_discovery, &(p_ble_evt->evt.gattc_evt));
+							//is_BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP_done = 0;
+						}
             break;
 
         case BLE_GATTC_EVT_CHAR_DISC_RSP:
+					 bp_log("BLE_GATTC_EVT_CHAR_DISC_RSP\r\n");
+				  if (is_BLE_GATTC_EVT_CHAR_DISC_RSP_done){
             on_characteristic_discovery_rsp(p_db_discovery, &(p_ble_evt->evt.gattc_evt));
+						//is_BLE_GATTC_EVT_CHAR_DISC_RSP_done = 0;
+					}
             break;
 
         case BLE_GATTC_EVT_DESC_DISC_RSP:
+					bp_log("BLE_GATTC_EVT_DESC_DISC_RSP\r\n");
+				  if (is_BLE_GATTC_EVT_DESC_DISC_RSP_done){
             on_descriptor_discovery_rsp(p_db_discovery, &(p_ble_evt->evt.gattc_evt));
+						//is_BLE_GATTC_EVT_DESC_DISC_RSP_done = 0;
+					}
             break;
 
         default:
