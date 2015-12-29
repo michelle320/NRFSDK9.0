@@ -31,7 +31,8 @@ typedef enum
     BLE_BP_C_EVT_DISCOVERY_COMPLETE = 1,  /**< Event indicating that the Heart Rate Service has been discovered at the peer. */
     BLE_BP_C_EVT_MEA_NOTIFICATION,         /**< Event indicating that a notification of the Heart Rate Measurement characteristic has been received from the peer. */
     BLE_BP_C_EVT_CUFF_NOTIFICATION,
-	  BLE_BP_C_EVT_GOT_VAL
+	  BLE_BP_C_EVT_GOT_VAL,
+	 BLE_BP_C_EVT_DISCONNECTED
 } ble_bp_c_evt_type_t;
 
 typedef struct ble_bp_c_s ble_bp_c_t;

@@ -228,7 +228,12 @@ void ble_bp_c_on_ble_evt(ble_bp_c_t * p_ble_bp_c, ble_evt_t * p_ble_evt)
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
-            bp_log("ble_bp_on_ble_evt: BLE_GAP_EVT_DISCONNECTED\r\n");
+				{
+           bp_log("ble_bp_on_ble_evt: BLE_GAP_EVT_DISCONNECTED\r\n");
+					 ble_bp_c_evt_t ble_bp_c_evt;
+           ble_bp_c_evt.evt_type = BLE_BP_C_EVT_DISCONNECTED;
+			    bp_c_evt_handler(p_ble_bp_c, &ble_bp_c_evt);
+				}
             break;
 
         case BLE_GATTC_EVT_HVX:
