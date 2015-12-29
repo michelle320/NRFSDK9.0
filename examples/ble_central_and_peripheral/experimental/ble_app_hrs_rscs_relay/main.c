@@ -972,14 +972,20 @@ void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt)
 				 }
         case BLE_BP_C_EVT_GOT_VAL:
 					{
-					 	printf("BLE_BP_C_EVT_GOT_VAL\r\n");
-						printf("Hi mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[1]);
-						printf("Lo mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[3]);
+						char temp[20];
+					 	//printf("BLE_BP_C_EVT_GOT_VAL\r\n");
+						//printf("Hi mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[1]);
+						//printf("Lo mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[3]);
+						sprintf(&temp[0],"Hi mmHG = %d \n",p_bp_c_evt->params.bp.bp_value[1]);
+						SEGGER_RTT_WriteString(0, &temp[0]);
+						sprintf(&temp[0],"Lo mmHG = %d \n",p_bp_c_evt->params.bp.bp_value[3]);
+						SEGGER_RTT_WriteString(0, &temp[0]);
 					break;
 				 }
         case BLE_BP_C_EVT_DISCONNECTED:
 				{
-						printf("BLE_BP_C_EVT_DISCONNECTED\r\n");
+						//printf("BLE_BP_C_EVT_DISCONNECTED\r\n");
+						SEGGER_RTT_WriteString(0, "BLE_BP_C_EVT_DISCONNECTED\n");
 					  break;
 				}
         default:
@@ -1290,7 +1296,7 @@ int main(void)
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, NULL);
     buttons_leds_init(&erase_bonds);
     uart_init();
-    printf("Relay Example\r\n");
+    //printf("Relay Example\r\n");
 		SEGGER_RTT_WriteString(0, "Hello main!\n");
     ble_stack_init();
     device_manager_init(erase_bonds);
