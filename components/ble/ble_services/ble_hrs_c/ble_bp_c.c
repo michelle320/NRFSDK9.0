@@ -82,7 +82,7 @@ static void tx_buffer_process(void)
     }
 }
 
-
+extern void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt);
 static void on_hvx(ble_bp_c_t * p_ble_bp_c, const ble_evt_t * p_ble_evt)
 {
 	bp_log("p_ble_evt->evt.gattc_evt.params.hvx.handle=0x%x\r\n",p_ble_evt->evt.gattc_evt.params.hvx.handle);
@@ -95,19 +95,24 @@ static void on_hvx(ble_bp_c_t * p_ble_bp_c, const ble_evt_t * p_ble_evt)
     //if (p_ble_evt->evt.gattc_evt.params.hvx.handle == p_ble_bp_c->bp_CUFF_handle)
 			 if (p_ble_evt->evt.gattc_evt.params.hvx.handle == p_ble_bp_c->bp_MEA_handle)
     {
-        ble_hrs_c_evt_t ble_bp_c_evt;
+        ble_bp_c_evt_t ble_bp_c_evt;
         uint32_t        index = 0;
 
-        ble_bp_c_evt.evt_type = BLE_HRS_C_EVT_HRM_NOTIFICATION;
+        ble_bp_c_evt.evt_type = BLE_BP_C_EVT_GOT_VAL;
 			
 			bp_log("hvx:len=0x%x\r\n",(p_ble_evt->evt.gattc_evt.params.hvx.len));
 			int ii;
 			//for (ii=0;ii<p_ble_evt->evt.gattc_evt.params.hvx.len;ii++){
 				for (ii=0;ii<4;ii++){
-			  bp_log("hvx:index=%d, val=%d\r\n",index+ii,p_ble_evt->evt.gattc_evt.params.hvx.data[index+ii]);
+					ble_bp_c_evt.params.bp.bp_value[ii] = p_ble_evt->evt.gattc_evt.params.hvx.data[index+ii];
+			    bp_log("hvx:index=%d, val=%d\r\n",index+ii,p_ble_evt->evt.gattc_evt.params.hvx.data[index+ii]);
 			}
 			 //bp_log("hvx:index=%d, val=0x%x\r\n",index+len,p_ble_evt->evt.gattc_evt.params.hvx.data[index+len]);
 			bp_log("Finish\r\n");
+			
+			bp_c_evt_handler(p_ble_bp_c, &ble_bp_c_evt);
+			
+			
 /*
         if (!(p_ble_evt->evt.gattc_evt.params.hvx.data[index++] & HRM_FLAG_MASK_HR_16BIT))
         {
