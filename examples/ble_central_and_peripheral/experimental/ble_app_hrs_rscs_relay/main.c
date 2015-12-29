@@ -79,8 +79,8 @@
 #define CENTRAL_SCANNING_LED       BSP_LED_0_MASK
 #define CENTRAL_CONNECTED_LED      BSP_LED_1_MASK
 
-#define UART_TX_BUF_SIZE           128                                /**< UART TX buffer size. */
-#define UART_RX_BUF_SIZE           128                                  /**< UART RX buffer size. */
+#define UART_TX_BUF_SIZE           64                                /**< UART TX buffer size. */
+#define UART_RX_BUF_SIZE           64                                  /**< UART RX buffer size. */
 
 #define STRING_BUFFER_LEN          50
 #define BOND_DELETE_ALL_BUTTON_ID  0                                  /**< Button used for deleting all bonded centrals during startup. */
@@ -112,6 +112,30 @@
 
 #define PERIPHERALS_MAX_NUM        2
 
+#define APP_BEACON_MANUF_DATA_LEN       0x17                              /**< Total length of information advertised by the beacon. */
+#define APP_ADV_DATA_LENGTH             0x15                              /**< Length of manufacturer specific data in the advertisement. */
+#define APP_DEVICE_TYPE                 0x02                              /**< 0x02 refers to beacon. */
+#define APP_DEFAULT_MEASURED_RSSI       0xC3                              /**< The beacon's measured RSSI at 1 meter distance in dBm. */
+#define APP_DEFAULT_COMPANY_IDENTIFIER  0x004C    ////   0x0059                     /**< Company identifier for Nordic Semiconductor. as per www.bluetooth.org. */
+#define APP_DEFAULT_MAJOR_VALUE                 0x01, 0x02                        /**< Major value used to identify Beacons. */ 
+#define APP_DEFAULT_MINOR_VALUE                 0x03, 0x04                        /**< Minor value used to identify Beacons. */ 
+#define APP_DEFAULT_BEACON_UUID         0x01, 0x12, 0x23, 0x34, \
+                                        0x45, 0x56, 0x67, 0x78, \
+                                        0x89, 0x9a, 0xab, 0xbc, \
+                                        0xcd, 0xde, 0xef, 0xF0            /**< Proprietary UUID for beacon. */
+
+#define BEACON_MANUF_DAT_UUID_IDX     2
+#define BEACON_MANUF_DAT_MAJOR_H_IDX 18
+#define BEACON_MANUF_DAT_MAJOR_L_IDX 19
+#define BEACON_MANUF_DAT_MINOR_H_IDX 20
+#define BEACON_MANUF_DAT_MINOR_L_IDX 21
+#define BEACON_MANUF_DAT_RSSI_IDX    22
+
+#define MAGIC_FLASH_BYTE 0x42
+#define APP_BEACON_DEFAULT_ADV_INTERVAL_MS 300
+#define APP_BEACON_ADV_TIMEOUT               0
+#define NON_CONNECTABLE_ADV_INTERVAL    MSEC_TO_UNITS(100, UNIT_0_625_MS) /**< The advertising interval for non-connectable advertisement (100 ms). This value can vary between 100ms to 10.24s). */
+
 /**@breif Macro to unpack 16bit unsigned UUID from octet stream. */
 #define UUID16_EXTRACT(DST, SRC) \
     do                           \
@@ -135,9 +159,34 @@ typedef enum
     BLE_FAST_SCAN,       /**< Fast advertising running. */
 } ble_scan_mode_t;
 
+typedef enum
+{
+    beacon_mode_config,  /**< Beacon configuration mode. */
+    beacon_mode_normal   /**< Normal beacon operation mode. */
+}beacon_mode_t;
+
+typedef struct
+{
+    uint8_t  magic_byte;                             /**< Magic byte in flash to detect if data is valid or not. */
+    uint8_t  beacon_data[APP_BEACON_MANUF_DATA_LEN]; /**< Beacon manufacturer specific data*/
+    uint16_t company_id;                             /**< Advertised beacon company idetifier. */
+    uint16_t adv_interval;                           /**< Advertising interval in ms */
+    uint8_t  led_state;                              /**< Softblinking LEDs state */
+}beacon_data_t;
+
+
+typedef union
+{
+    beacon_data_t data;
+    uint32_t      padding[CEIL_DIV(sizeof(beacon_data_t), 4)];
+}beacon_flash_db_t;
+
+
 static ble_db_discovery_t        m_ble_db_discovery;                               /**< Structure used to identify the DB Discovery module. */
 static ble_hrs_c_t               m_ble_hrs_c;                                      /**< Structure used to identify the heart rate client module. */
 static ble_rscs_c_t              m_ble_rsc_c;                                      /**< Structure used to identify the running speed and cadence client module. */
+static beacon_mode_t        m_beacon_mode;                                          /**< Current beacon mode */
+static beacon_flash_db_t    *p_beacon;                                              /**< Pointer to beacon params */
 static ble_gap_scan_params_t     m_scan_param;                                     /**< Scan parameters requested for scanning and connection. */
 static dm_application_instance_t m_dm_app_id;                                      /**< Application identifier. */
 static dm_handle_t               m_dm_device_handle;                               /**< Device Identifier identifier. */
@@ -145,6 +194,8 @@ static uint8_t                   m_peer_count = 0;                              
 static ble_scan_mode_t           m_scan_mode = BLE_FAST_SCAN;                      /**< Scan mode used by application. */
 ble_gap_addr_t                   m_hrs_peripheral_address;
 ble_gap_addr_t                   m_rscs_peripheral_address;
+
+static ble_gap_adv_params_t m_adv_params;  
 
 static uint16_t                  m_conn_handle_central_hrs = BLE_CONN_HANDLE_INVALID;  /**< Current connection handle. */
 static uint16_t                  m_conn_handle_central_rsc = BLE_CONN_HANDLE_INVALID;  /**< Current connection handle. */
@@ -198,6 +249,20 @@ static void scan_start(void);
 static uint16_t                          m_conn_handle_peripheral = BLE_CONN_HANDLE_INVALID;  /**< Handle of the current connection. */
 static ble_hrs_t                         m_hrs;                                               /**< Structure used to identify the heart rate service. */
 static ble_rscs_t                        m_rscs;                                              /**< Structure used to identify the running speed and cadence service. */
+
+static uint8_t m_beacon_info[APP_BEACON_MANUF_DATA_LEN] =                    /**< Information advertised by the Beacon. */
+{
+    APP_DEVICE_TYPE,     // Manufacturer specific information. Specifies the device type in this 
+                         // implementation. 
+    APP_ADV_DATA_LENGTH, // Manufacturer specific information. Specifies the length of the 
+                         // manufacturer specific data in this implementation.
+    APP_DEFAULT_BEACON_UUID,     // 128 bit UUID value. 
+    APP_DEFAULT_MAJOR_VALUE,     // Major arbitrary value that can be used to distinguish between Beacons. 
+    APP_DEFAULT_MINOR_VALUE,     // Minor arbitrary value that can be used to distinguish between Beacons. 
+    APP_DEFAULT_MEASURED_RSSI    // Manufacturer specific information. The Beacon's measured TX power in 
+                         // this implementation. 
+};
+
 
 
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HEART_RATE_SERVICE,         BLE_UUID_TYPE_BLE},
@@ -272,6 +337,103 @@ void uart_event_handle(app_uart_evt_t * p_event)
 					ind = 0;
 					break;
 					
+				}
+				
+				if ((data_array[ind - 5] == 'R')&&(data_array[ind - 4] == 'E')&&(data_array[ind - 3] == 'S')&&(data_array[ind - 2] == 'E')&&(data_array[ind - 1] == 'T'))
+				{
+					SEGGER_RTT_WriteString(0, "Michelle: Got Reset!!!\n");
+					NVIC_SystemReset();
+					strcpy(response,"OK");
+					for (uint32_t i = 0; i < 2; i++)
+					{
+							while(app_uart_put(response[i]) != NRF_SUCCESS);
+					}
+					while(app_uart_put('\n') != NRF_SUCCESS);
+					
+					ind = 0;
+					break;
+				}
+				
+				if ((data_array[ind - 6] == 'N')&&(data_array[ind - 5] == 'O')&&(data_array[ind - 4] == 'R')&&(data_array[ind - 3] == 'M')&&(data_array[ind - 2] == 'A')&&(data_array[ind - 1] == 'L'))
+				{
+					SEGGER_RTT_WriteString(0, "Michelle: Got Normal!\n");
+					strcpy(response,"OK");
+					for (uint32_t i = 0; i < 2; i++)
+					{
+							while(app_uart_put(response[i]) != NRF_SUCCESS);
+					}
+					while(app_uart_put('\n') != NRF_SUCCESS);
+					
+					ind = 0;
+					break;
+				}
+				
+				if ((data_array[ind - 4] == 'S')&&(data_array[ind - 3] == 'T')&&(data_array[ind - 2] == 'O')&&(data_array[ind - 1] == 'P'))
+				{
+					SEGGER_RTT_WriteString(0, "Michelle: Got Stop!\n");
+					strcpy(response,"OK");
+					for (uint32_t i = 0; i < 2; i++)
+					{
+							while(app_uart_put(response[i]) != NRF_SUCCESS);
+					}
+					while(app_uart_put('\n') != NRF_SUCCESS);
+					
+					ind = 0;
+					break;
+				}
+				
+				if ((data_array[ind - 4] == 'U')&&(data_array[ind - 3] == 'U')&&(data_array[ind - 2] == 'I')&&(data_array[ind - 1] == 'D'))
+				{
+					char temp[35];
+					static beacon_flash_db_t tmp;	
+					int i=0;
+					SEGGER_RTT_WriteString(0, "Michelle: Get UUID \n");
+					
+
+					//tmp = *beacon_params_get_id();
+																	
+					sprintf(&temp[0],"%c",'O');
+					sprintf(&temp[1],"%c",'K');
+					for (i=0;i<16;i++) 
+					{
+						sprintf(&temp[2+i*2],"%02X",m_beacon_info[i+2]);//tmp.data.beacon_data[2] is the start bit to store UUID
+					}
+
+					for (uint32_t i = 0; i < 34; i++)
+					{
+							while(app_uart_put(temp[i]) != NRF_SUCCESS);
+					}
+					while(app_uart_put('\n') != NRF_SUCCESS);
+
+					ind = 0;
+					break;
+				}
+				
+				if ((data_array[ind - 2] == 'M')&&(data_array[ind - 1] == 'M'))
+				{
+					char temp[12];
+					static beacon_flash_db_t tmp;	
+					SEGGER_RTT_WriteString(0, "Michelle: Get MAJORMINOR \n");
+					
+
+					//tmp = *beacon_params_get_id();
+																	
+					sprintf(&temp[0],"%c",'O');
+					sprintf(&temp[1],"%c",'K');
+					sprintf(&temp[2],"%02X",m_beacon_info[BEACON_MANUF_DAT_MAJOR_H_IDX]);
+					sprintf(&temp[4],"%02X",m_beacon_info[BEACON_MANUF_DAT_MAJOR_L_IDX]);
+					sprintf(&temp[6],"%02X",m_beacon_info[BEACON_MANUF_DAT_MINOR_H_IDX]);
+					sprintf(&temp[8],"%02X",m_beacon_info[BEACON_MANUF_DAT_MINOR_L_IDX]);
+
+
+					for (uint32_t i = 0; i < 10; i++)
+					{
+							while(app_uart_put(temp[i]) != NRF_SUCCESS);
+					}
+					while(app_uart_put('\n') != NRF_SUCCESS);
+
+					ind = 0;
+					break;
 				}
 				
 				if ((data_array[ind - 4] == 'A')&&(data_array[ind - 3] == 'D')&&(data_array[ind - 2] == 'D')&&(data_array[ind - 1] == 'R'))
@@ -1028,6 +1190,7 @@ void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt)
     {
         case BLE_BP_C_EVT_DISCOVERY_COMPLETE:
 				  bp_log("BLE_BP_C_EVT_DISCOVERY_COMPLETE\r\n");
+					SEGGER_RTT_WriteString(0, "BLE_BP_C_EVT_DISCOVERY_COMPLETE\n");
 				  //printf("abcdefghijklmnopqrstuvwxyz\r\n");
 				 //7err_code = dm_security_setup_req(&m_dm_device_handle);
 				 //err_code = ble_bp_c_test_notif_enable(p_bp_c);
@@ -1077,6 +1240,7 @@ void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt)
 					{
 						char temp[20];
 						char response[20];
+						SEGGER_RTT_WriteString(0, "BLE_BP_C_EVT_GOT_VAL\n");
 					 	//printf("BLE_BP_C_EVT_GOT_VAL\r\n");
 						//printf("Hi mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[1]);
 						//printf("Lo mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[3]);
@@ -1362,33 +1526,51 @@ static void conn_params_init(void)
     err_code = ble_conn_params_init(&cp_init);
     APP_ERROR_CHECK(err_code);
 }
-
-
-/**@brief Function for initializing the Advertising functionality.
- */
 static void advertising_init(void)
 {
+		ble_advdata_manuf_data_t manuf_specific_data;
+		uint8_t       flags = BLE_GAP_ADV_FLAG_BR_EDR_NOT_SUPPORTED;
     uint32_t      err_code;
     ble_advdata_t advdata;
 
-    // Build advertising data struct to pass into @ref ble_advertising_init.
+		manuf_specific_data.company_identifier = APP_DEFAULT_COMPANY_IDENTIFIER;
+    manuf_specific_data.data.p_data = (uint8_t *) m_beacon_info;
+    manuf_specific_data.data.size   = APP_BEACON_MANUF_DATA_LEN;
     memset(&advdata, 0, sizeof(advdata));
 
-    advdata.name_type               = BLE_ADVDATA_FULL_NAME;
-    advdata.include_appearance      = true;
-    advdata.flags                   = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
-    advdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
-    advdata.uuids_complete.p_uuids  = m_adv_uuids;
+    advdata.name_type               = BLE_ADVDATA_NO_NAME;
+    advdata.flags                 = flags;
+		advdata.p_manuf_specific_data   = &manuf_specific_data;
+		err_code = ble_advdata_set(&advdata, NULL);
+		
+		APP_ERROR_CHECK(err_code);
 
-    ble_adv_modes_config_t options = {0};
-    options.ble_adv_fast_enabled  = BLE_ADV_FAST_ENABLED;
-    options.ble_adv_fast_interval = APP_ADV_INTERVAL;
-    options.ble_adv_fast_timeout  = APP_ADV_TIMEOUT_IN_SECONDS;
+		
+		// Initialize advertising parameters (used when starting advertising).
+		memset(&m_adv_params, 0, sizeof(m_adv_params));
 
-    err_code = ble_advertising_init(&advdata, NULL, &options, on_adv_evt, NULL);
-    APP_ERROR_CHECK(err_code);
+		m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_NONCONN_IND;
+		m_adv_params.p_peer_addr = NULL;                             // Undirected advertisement.
+		m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
+		m_adv_params.interval    = NON_CONNECTABLE_ADV_INTERVAL;
+		m_adv_params.timeout     = APP_BEACON_ADV_TIMEOUT;
+
 }
 
+
+static void advertising_start(void)
+{
+    uint32_t err_code = NRF_SUCCESS;
+		uint32_t tx_power = 0;
+
+		SEGGER_RTT_WriteString(0, "advertising_start!\n");
+	
+		err_code = sd_ble_gap_adv_start(&m_adv_params);
+    APP_ERROR_CHECK(err_code);
+		SEGGER_RTT_WriteString(0, "advertising_start---------!\n");
+		//err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
+    //APP_ERROR_CHECK(err_code);
+}
 
 /** @brief Function for the Power manager.
  */
@@ -1421,7 +1603,7 @@ int main(void)
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     gap_params_init();
     services_init();
-    //advertising_init();
+    advertising_init();
     conn_params_init();
 
     // Start scanning for peripherals and initiate connection
@@ -1429,6 +1611,7 @@ int main(void)
     scan_start();
     
     // Start advertising.
+		advertising_start();
     //err_code = ble_advertising_start(BLE_ADV_MODE_FAST);
     //APP_ERROR_CHECK(err_code);
     
