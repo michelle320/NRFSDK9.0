@@ -58,7 +58,7 @@
 #include "nrf_gpio.h"
 #include "pstorage.h"
 #include "device_manager.h"
-#include "app_trace.h"
+//#include "app_trace.h"
 #include "ble_hrs_c.h"
 #include "ble_bas_c.h"
 #include "ble_rscs_c.h"
@@ -79,8 +79,8 @@
 #define CENTRAL_SCANNING_LED       BSP_LED_0_MASK
 #define CENTRAL_CONNECTED_LED      BSP_LED_1_MASK
 
-#define UART_TX_BUF_SIZE           256                                /**< UART TX buffer size. */
-#define UART_RX_BUF_SIZE           1                                  /**< UART RX buffer size. */
+#define UART_TX_BUF_SIZE           128                                /**< UART TX buffer size. */
+#define UART_RX_BUF_SIZE           128                                  /**< UART RX buffer size. */
 
 #define STRING_BUFFER_LEN          50
 #define BOND_DELETE_ALL_BUTTON_ID  0                                  /**< Button used for deleting all bonded centrals during startup. */
@@ -89,7 +89,7 @@
 #define APP_TIMER_MAX_TIMERS       (2+BSP_APP_TIMERS_NUMBER)          /**< Maximum number of simultaneously created timers. */
 #define APP_TIMER_OP_QUEUE_SIZE    2                                  /**< Size of timer operation queues. */
 
-#define APPL_LOG                   app_trace_log                      /**< Debug logger macro that will be used in this file to do logging of debug information over UART. */
+//#define APPL_LOG                   app_trace_log                      /**< Debug logger macro that will be used in this file to do logging of debug information over UART. */
 
 #define SEC_PARAM_BOND             1                                  /**< Perform bonding. */
 #define SEC_PARAM_MITM             1                                  /**< Man In The Middle protection not required. */
@@ -174,7 +174,7 @@ static const ble_gap_conn_params_t m_connection_param =
 
 static void scan_start(void);
 
-#define APPL_LOG                        app_trace_log             /**< Debug logger macro that will be used in this file to do logging of debug information over UART. */
+//#define APPL_LOG                        app_trace_log             /**< Debug logger macro that will be used in this file to do logging of debug information over UART. */
 
 /*Defines needed by the peripheral*/
 
@@ -219,16 +219,90 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
     app_error_handler(0xDEADBEEF, line_num, p_file_name);
 }
 
-void uart_error_handle(app_uart_evt_t * p_event)
+uint32_t ind = 0;
+void uart_event_handle(app_uart_evt_t * p_event)
 {
-    if (p_event->evt_type == APP_UART_COMMUNICATION_ERROR)
+		static uint8_t data_array[20];
+		char temp[20];
+		char response[20];
+		//SEGGER_RTT_WriteString(0, "uart_event_handle\n");
+	
+		switch (p_event->evt_type) {
+			case APP_UART_DATA_READY:
+				//SEGGER_RTT_WriteString(0, "APP_UART_DATA_READY\n");
+				UNUSED_VARIABLE(app_uart_get(&data_array[ind]));
+				sprintf(&temp[0],"index = %d %x [%c] \n", ind, data_array[ind], data_array[ind]);
+			
+				SEGGER_RTT_WriteString(0, &temp[0]);
+				ind++;
+			
+			
+				if ((data_array[ind - 5] == 'S')&&(data_array[ind - 4] == 'T')&&(data_array[ind - 3] == 'A')&&(data_array[ind - 2] == 'R')&&(data_array[ind - 1] == 'T'))
+				{
+					SEGGER_RTT_WriteString(0, "Michelle: Got Start!\n");
+					strcpy(response,"OK");
+					for (uint32_t i = 0; i < 2; i++) {
+									while(app_uart_put(response[i]) != NRF_SUCCESS);
+					}
+					while(app_uart_put('\n') != NRF_SUCCESS);
+					ind = 0;
+					break;
+					
+				}
+				
+				if ((data_array[ind - 4] == 'A')&&(data_array[ind - 3] == 'D')&&(data_array[ind - 2] == 'D')&&(data_array[ind - 1] == 'R'))
+				{
+					char temp[20];
+					SEGGER_RTT_WriteString(0, "Michelle: Get ADDR \n");
+					sprintf(&temp[0],"%c",'O');
+					sprintf(&temp[1],"%c",'K');
+					sprintf(&temp[2],"%02X",((uint8_t)(NRF_FICR->DEVICEADDR[1]>>8))|0xC0);//because the specification says that the 2 MSBit of the address must be set '11' 
+					sprintf(&temp[4],"%02X",(uint8_t)(NRF_FICR->DEVICEADDR[1]));
+					sprintf(&temp[6],"%02X",(uint8_t)(NRF_FICR->DEVICEADDR[0]>>24));
+					sprintf(&temp[8],"%02X",(uint8_t)(NRF_FICR->DEVICEADDR[0]>>16));
+					sprintf(&temp[10],"%02X",(uint8_t)(NRF_FICR->DEVICEADDR[0]>>8));
+					sprintf(&temp[12],"%02X",(uint8_t)(NRF_FICR->DEVICEADDR[0]));
+					
+					for (uint32_t i = 0; i < 14; i++)
+					{
+									while(app_uart_put(temp[i]) != NRF_SUCCESS);
+					}
+					while(app_uart_put('\n') != NRF_SUCCESS);
+
+					ind = 0;
+					break;
+				}
+				
+				
+				break;
+			
+			case APP_UART_COMMUNICATION_ERROR:
+				SEGGER_RTT_WriteString(0, "APP_UART_COMMUNICATION_ERROR\n");
+				APP_ERROR_HANDLER(p_event->data.error_communication);
+				break;
+			
+			case APP_UART_FIFO_ERROR:
+				SEGGER_RTT_WriteString(0, "APP_UART_FIFO_ERROR\n");
+				APP_ERROR_HANDLER(p_event->data.error_code);
+				break;
+			
+			
+			case APP_UART_TX_EMPTY:
+					SEGGER_RTT_WriteString(0, "APP_UART_TX_EMPTY\n");
+				break;
+			
+			default:
+				break;
+		}
+    /*if (p_event->evt_type == APP_UART_COMMUNICATION_ERROR)
     {
         APP_ERROR_HANDLER(p_event->data.error_communication);
     }
     else if (p_event->evt_type == APP_UART_FIFO_ERROR)
     {
         APP_ERROR_HANDLER(p_event->data.error_code);
-    }
+
+    }*/
 }
 
 /**@brief Callback handling device manager events.
@@ -250,14 +324,14 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
     {
         case DM_EVT_CONNECTION:
         {
-            APPL_LOG("[APPL]: >> DM_EVT_CONNECTION\r\n");
+            //APPL_LOG("[APPL]: >> DM_EVT_CONNECTION\r\n");
 #ifdef ENABLE_DEBUG_LOG_SUPPORT
             ble_gap_addr_t * peer_addr;
             peer_addr = &p_event->event_param.p_gap_param->params.connected.peer_addr;
 #endif // ENABLE_DEBUG_LOG_SUPPORT
-            APPL_LOG("[APPL]:[%02X %02X %02X %02X %02X %02X]: Connection Established\r\n",
-                                peer_addr->addr[0], peer_addr->addr[1], peer_addr->addr[2],
-                                peer_addr->addr[3], peer_addr->addr[4], peer_addr->addr[5]);
+            //APPL_LOG("[APPL]:[%02X %02X %02X %02X %02X %02X]: Connection Established\r\n",
+            //                    peer_addr->addr[0], peer_addr->addr[1], peer_addr->addr[2],
+            //                    peer_addr->addr[3], peer_addr->addr[4], peer_addr->addr[5]);
 
             LEDS_ON(CENTRAL_CONNECTED_LED);
 
@@ -297,13 +371,13 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
             {
                 scan_start();
             }
-            APPL_LOG("[APPL]: << DM_EVT_CONNECTION\r\n");
+            //APPL_LOG("[APPL]: << DM_EVT_CONNECTION\r\n");
             break;
         }
 
         case DM_EVT_DISCONNECTION:
         {
-            APPL_LOG("[APPL]: >> DM_EVT_DISCONNECTION\r\n");
+           //APPL_LOG("[APPL]: >> DM_EVT_DISCONNECTION\r\n");
             memset(&m_ble_db_discovery, 0 , sizeof (m_ble_db_discovery));
 
              if(p_event->event_param.p_gap_param->conn_handle == m_conn_handle_central_hrs)
@@ -332,52 +406,52 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
                 scan_start();
             }
             m_peer_count--;
-            APPL_LOG("[APPL]: << DM_EVT_DISCONNECTION\r\n");
+            //APPL_LOG("[APPL]: << DM_EVT_DISCONNECTION\r\n");
             break;
         }
 
         case DM_EVT_SECURITY_SETUP:
         {
-            APPL_LOG("[APPL]:[0x%02X] >> DM_EVT_SECURITY_SETUP\r\n", p_handle->connection_id);
+            //APPL_LOG("[APPL]:[0x%02X] >> DM_EVT_SECURITY_SETUP\r\n", p_handle->connection_id);
             // Slave securtiy request received from peer, if from a non bonded device, 
             // initiate security setup, else, wait for encryption to complete.
             err_code = dm_security_setup_req(&m_dm_device_handle);
             APP_ERROR_CHECK(err_code);
-            APPL_LOG("[APPL]:[0x%02X] << DM_EVT_SECURITY_SETUP\r\n", p_handle->connection_id);
+            //APPL_LOG("[APPL]:[0x%02X] << DM_EVT_SECURITY_SETUP\r\n", p_handle->connection_id);
             break;
         }
 
         case DM_EVT_SECURITY_SETUP_COMPLETE:
         {
-            APPL_LOG("[APPL]: >> DM_EVT_SECURITY_SETUP_COMPLETE\r\n");
+            //APPL_LOG("[APPL]: >> DM_EVT_SECURITY_SETUP_COMPLETE\r\n");
             // Heart rate service discovered. Enable notification of Heart Rate Measurement.
             err_code = ble_hrs_c_hrm_notif_enable(&m_ble_hrs_c);
             APP_ERROR_CHECK(err_code);
-            APPL_LOG("[APPL]: << DM_EVT_SECURITY_SETUP_COMPLETE\r\n");
+            //APPL_LOG("[APPL]: << DM_EVT_SECURITY_SETUP_COMPLETE\r\n");
             break;
         }
 
         case DM_EVT_LINK_SECURED:
-            APPL_LOG("[APPL]: >> DM_LINK_SECURED_IND\r\n");
-            APPL_LOG("[APPL]: << DM_LINK_SECURED_IND\r\n");
+            //APPL_LOG("[APPL]: >> DM_LINK_SECURED_IND\r\n");
+            //APPL_LOG("[APPL]: << DM_LINK_SECURED_IND\r\n");
             break;
 
         case DM_EVT_DEVICE_CONTEXT_LOADED:
-            APPL_LOG("[APPL]: >> DM_EVT_LINK_SECURED\r\n");
+            //APPL_LOG("[APPL]: >> DM_EVT_LINK_SECURED\r\n");
             APP_ERROR_CHECK(event_result);
-            APPL_LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_LOADED\r\n");
+            //APPL_LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_LOADED\r\n");
             break;
 
         case DM_EVT_DEVICE_CONTEXT_STORED:
-            APPL_LOG("[APPL]: >> DM_EVT_DEVICE_CONTEXT_STORED\r\n");
+            //APPL_LOG("[APPL]: >> DM_EVT_DEVICE_CONTEXT_STORED\r\n");
             APP_ERROR_CHECK(event_result);
-            APPL_LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_STORED\r\n");
+            //APPL_LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_STORED\r\n");
             break;
 
         case DM_EVT_DEVICE_CONTEXT_DELETED:
-            APPL_LOG("[APPL]: >> DM_EVT_DEVICE_CONTEXT_DELETED\r\n");
+            //APPL_LOG("[APPL]: >> DM_EVT_DEVICE_CONTEXT_DELETED\r\n");
             APP_ERROR_CHECK(event_result);
-            APPL_LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_DELETED\r\n");
+            //APPL_LOG("[APPL]: << DM_EVT_DEVICE_CONTEXT_DELETED\r\n");
             break;
 
         default:
@@ -534,7 +608,7 @@ static void on_ble_central_evt(ble_evt_t * p_ble_evt)
                 {
                     UUID16_EXTRACT(&extracted_uuid,&type_data.p_data[u_index * UUID16_SIZE]);
 
-                    APPL_LOG("\t[APPL]: %x\r\n",extracted_uuid);
+                    //APPL_LOG("\t[APPL]: %x\r\n",extracted_uuid);
                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
                     if((/*extracted_uuid == BLE_UUID_HEART_RATE_SERVICE || extracted_uuid == BLE_UUID_RUNNING_SPEED_AND_CADENCE ||*/ extracted_uuid == BLE_UUID_BLOOD_PRESSURE_SERVICE) && (is_done))
                     {
@@ -568,7 +642,7 @@ static void on_ble_central_evt(ble_evt_t * p_ble_evt)
 
                         if (err_code != NRF_SUCCESS)
                         {
-                            APPL_LOG("[APPL]: Connection Request Failed, reason %d\r\n", err_code);
+                            //APPL_LOG("[APPL]: Connection Request Failed, reason %d\r\n", err_code);
                         }
                         break;
 												
@@ -583,12 +657,12 @@ static void on_ble_central_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_TIMEOUT:
             if (p_gap_evt->params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
             {
-                APPL_LOG("[APPL]: Scan timed out.\r\n");
+                //APPL_LOG("[APPL]: Scan timed out.\r\n");
                 scan_start();
             }
             else if (p_gap_evt->params.timeout.src == BLE_GAP_TIMEOUT_SRC_CONN)
             {
-                APPL_LOG("[APPL]: Connection Request timed out.\r\n");
+                //APPL_LOG("[APPL]: Connection Request timed out.\r\n");
             }
             break;
 
@@ -842,7 +916,7 @@ void hrs_c_evt_handler(ble_hrs_c_t * p_hrs_c, ble_hrs_c_evt_t * p_hrs_c_evt)
             break;
         case BLE_HRS_C_EVT_HRM_NOTIFICATION:
         {
-            APPL_LOG("[APPL]: HR Measurement received %d \r\n", p_hrs_c_evt->params.hrm.hr_value);
+            //APPL_LOG("[APPL]: HR Measurement received %d \r\n", p_hrs_c_evt->params.hrm.hr_value);
             //printf("Heart Rate = %d\r\n", p_hrs_c_evt->params.hrm.hr_value);
             err_code = ble_hrs_heart_rate_measurement_send(&m_hrs, p_hrs_c_evt->params.hrm.hr_value);
             if ((err_code != NRF_SUCCESS) &&
@@ -886,7 +960,7 @@ static void rscs_c_evt_handler(ble_rscs_c_t * p_rsc_c, ble_rscs_c_evt_t * p_rsc_
         case BLE_RSCS_C_EVT_RSC_NOTIFICATION:
         {
             //printf("\r\n");
-            APPL_LOG("[APPL]: RSC Measurement received %d \r\n", p_rsc_c_evt->params.rsc.inst_speed);
+            //APPL_LOG("[APPL]: RSC Measurement received %d \r\n", p_rsc_c_evt->params.rsc.inst_speed);
             //printf("Speed      = %d\r\n", p_rsc_c_evt->params.rsc.inst_speed);
             
             ble_rscs_meas_t rscs_measurment;
@@ -1119,21 +1193,21 @@ static void uart_init(void)
            TX_PIN_NUMBER,
            RTS_PIN_NUMBER,
            CTS_PIN_NUMBER,
-           APP_UART_FLOW_CONTROL_ENABLED,
+           APP_UART_FLOW_CONTROL_DISABLED,
            false,
-           UART_BAUDRATE_BAUDRATE_Baud38400
+           UART_BAUDRATE_BAUDRATE_Baud9600
        };
 
     APP_UART_FIFO_INIT(&comm_params,
                           UART_RX_BUF_SIZE,
                           UART_TX_BUF_SIZE,
-                          uart_error_handle,
+                          uart_event_handle,
                           APP_IRQ_PRIORITY_LOW,
                           err_code);
 
     APP_ERROR_CHECK(err_code);
 
-    app_trace_init();
+    //app_trace_init();
 }
 
 
