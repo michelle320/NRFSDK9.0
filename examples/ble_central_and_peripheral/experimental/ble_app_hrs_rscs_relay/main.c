@@ -74,6 +74,8 @@
 #include "ble_conn_params.h"
 #include "app_timer.h"
 
+#include "SEGGER_RTT.h"
+
 #define CENTRAL_SCANNING_LED       BSP_LED_0_MASK
 #define CENTRAL_CONNECTED_LED      BSP_LED_1_MASK
 
@@ -748,7 +750,7 @@ static void ble_stack_init(void)
     uint32_t err_code;
 
     // Initialize the SoftDevice handler module.
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, NULL);
+		SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_RC_250_PPM_4000MS_CALIBRATION, NULL);
 
     // Enable BLE stack.
     ble_enable_params_t ble_enable_params;
@@ -1285,6 +1287,7 @@ int main(void)
     buttons_leds_init(&erase_bonds);
     uart_init();
     printf("Relay Example\r\n");
+		SEGGER_RTT_WriteString(0, "Hello main!\n");
     ble_stack_init();
     device_manager_init(erase_bonds);
     db_discovery_init();
