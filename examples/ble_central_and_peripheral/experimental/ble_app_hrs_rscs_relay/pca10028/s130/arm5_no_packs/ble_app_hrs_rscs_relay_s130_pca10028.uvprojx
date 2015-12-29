@@ -14,7 +14,7 @@
         <TargetCommonOption>
           <Device>nRF51422_xxAC</Device>
           <Vendor>Nordic Semiconductor</Vendor>
-          <PackID>NordicSemiconductor.nRF_DeviceFamilyPack.8.2.0</PackID>
+          <PackID>NordicSemiconductor.nRF_DeviceFamilyPack.7.1.0</PackID>
           <PackURL>http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_DeviceFamilyPack/</PackURL>
           <Cpu>IROM(0x00000000,0x40000) IRAM(0x20000000,0x8000) CPUTYPE("Cortex-M0") CLOCK(16000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -84,8 +84,6 @@
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
-            <nStopA1X>0</nStopA1X>
-            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -363,13 +361,11 @@
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
             <useXO>0</useXO>
-            <v6Lang>0</v6Lang>
-            <v6LangP>0</v6LangP>
             <VariousControls>
               <MiscControls>--c99</MiscControls>
-              <Define> __HEAP_SIZE=0 BLE_STACK_SUPPORT_REQD S130 BOARD_PCA10028 BSP_UART_SUPPORT NRF51 SOFTDEVICE_PRESENT SWI_DISABLE0</Define>
+              <Define>__HEAP_SIZE=0 BLE_STACK_SUPPORT_REQD S130 BOARD_PCA10028 BSP_UART_SUPPORT NRF51 SOFTDEVICE_PRESENT SWI_DISABLE0</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\config;..\..\..\..\..\..\..\components\softdevice\s130\headers;..\..\..\..\..\..\bsp;..\..\..\..\..\..\..\components\ble\common;..\..\..\..\..\..\..\components\drivers_nrf\uart;..\..\..\..\..\..\..\components\ble\device_manager;..\..\..\..\..\..\..\components\ble\ble_advertising;..\..\..\..\..\..\..\components\ble\ble_services\ble_hrs;..\..\..\..\..\..\..\components\ble\ble_services\ble_hrs_c;..\..\..\..\..\..\..\components\ble\ble_services\ble_bas;..\..\..\..\..\..\..\components\ble\ble_services\ble_rscs;..\..\..\..\..\..\..\components\ble\ble_services\ble_rscs_c;..\..\..\..\..\..\..\components\ble\ble_services\ble_bas_c;..\..\..\..\..\..\..\components\device;..\..\..\..\..\..\..\components\toolchain;..\..\..\..\..\..\..\components\libraries\util;..\..\..\..\..\..\..\components\libraries\fifo;..\..\..\..\..\..\..\components\drivers_nrf\gpiote;..\..\..\..\..\..\..\components\drivers_nrf\config;..\..\..\..\..\..\..\components\drivers_nrf\common;..\..\..\..\..\..\..\components\drivers_nrf\hal;..\..\..\..\..\..\..\components\libraries\button;..\..\..\..\..\..\..\components\ble\ble_db_discovery;..\..\..\..\..\..\..\components\softdevice\common\softdevice_handler;..\..\..\..\..\..\..\components\libraries\timer;..\..\..\..\..\..\..\components\drivers_nrf\pstorage;..\..\..\..\..\..\..\components\libraries\trace</IncludePath>
+              <IncludePath>..\..\..\config;..\..\..\..\..\..\..\components\softdevice\s130\headers;..\..\..\..\..\..\bsp;..\..\..\..\..\..\..\components\ble\common;..\..\..\..\..\..\..\components\drivers_nrf\uart;..\..\..\..\..\..\..\components\ble\device_manager;..\..\..\..\..\..\..\components\ble\ble_advertising;..\..\..\..\..\..\..\components\ble\ble_services\ble_hrs;..\..\..\..\..\..\..\components\ble\ble_services\ble_hrs_c;..\..\..\..\..\..\..\components\ble\ble_services\ble_bas;..\..\..\..\..\..\..\components\ble\ble_services\ble_rscs;..\..\..\..\..\..\..\components\ble\ble_services\ble_rscs_c;..\..\..\..\..\..\..\components\ble\ble_services\ble_bas_c;..\..\..\..\..\..\..\components\device;..\..\..\..\..\..\..\components\toolchain;..\..\..\..\..\..\..\components\libraries\util;..\..\..\..\..\..\..\components\libraries\fifo;..\..\..\..\..\..\..\components\drivers_nrf\gpiote;..\..\..\..\..\..\..\components\drivers_nrf\config;..\..\..\..\..\..\..\components\drivers_nrf\common;..\..\..\..\..\..\..\components\drivers_nrf\hal;..\..\..\..\..\..\..\components\libraries\button;..\..\..\..\..\..\..\components\ble\ble_db_discovery;..\..\..\..\..\..\..\components\softdevice\common\softdevice_handler;..\..\..\..\..\..\..\components\libraries\timer;..\..\..\..\..\..\..\components\drivers_nrf\pstorage;..\..\..\..\..\..\..\components\libraries\trace;..\..\..\..\..\..\..\RTT</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -450,8 +446,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -505,8 +499,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -555,8 +547,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -625,8 +615,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -675,8 +663,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -725,8 +711,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -775,8 +759,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -825,8 +807,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -875,8 +855,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -925,8 +903,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -975,8 +951,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1025,8 +999,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1075,8 +1047,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1125,8 +1095,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1175,8 +1143,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1235,8 +1201,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1285,8 +1249,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1335,8 +1297,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1385,8 +1345,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1435,8 +1393,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1490,8 +1446,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1540,8 +1494,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1590,8 +1542,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1640,8 +1590,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1690,8 +1638,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1740,8 +1686,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1790,8 +1734,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1869,8 +1811,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -1884,10 +1824,32 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>RTT</GroupName>
+          <Files>
+            <File>
+              <FileName>SEGGER_RTT.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\..\RTT\SEGGER_RTT.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>
           <GroupName>::Device</GroupName>
+          <Files>
+            <File>
+              <FileName>arm_startup_nrf51.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>RTE\Device\nRF51422_xxAC\arm_startup_nrf51.s</FilePath>
+            </File>
+            <File>
+              <FileName>system_nrf51.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>RTE\Device\nRF51422_xxAC\system_nrf51.c</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>
@@ -1899,7 +1861,7 @@
         <TargetCommonOption>
           <Device>nRF51422_xxAC</Device>
           <Vendor>Nordic Semiconductor</Vendor>
-          <PackID>NordicSemiconductor.nRF_DeviceFamilyPack.8.2.0</PackID>
+          <PackID>NordicSemiconductor.nRF_DeviceFamilyPack.7.1.0</PackID>
           <PackURL>http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_DeviceFamilyPack/</PackURL>
           <Cpu>IROM(0x00000000,0x40000) IRAM(0x20000000,0x8000) CPUTYPE("Cortex-M0") CLOCK(16000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -1969,8 +1931,6 @@
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
-            <nStopA1X>0</nStopA1X>
-            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -2248,8 +2208,6 @@
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
             <useXO>0</useXO>
-            <v6Lang>0</v6Lang>
-            <v6LangP>0</v6LangP>
             <VariousControls>
               <MiscControls>--c99</MiscControls>
               <Define> __HEAP_SIZE=0 BLE_STACK_SUPPORT_REQD</Define>
@@ -2335,8 +2293,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2390,8 +2346,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2440,8 +2394,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2510,8 +2462,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2560,8 +2510,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2610,8 +2558,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2660,8 +2606,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2710,8 +2654,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2760,8 +2702,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2810,8 +2750,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2860,8 +2798,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2910,8 +2846,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -2960,8 +2894,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3010,8 +2942,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3060,8 +2990,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3120,8 +3048,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3170,8 +3096,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3220,8 +3144,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3270,8 +3192,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3320,8 +3240,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3375,8 +3293,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3425,8 +3341,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3475,8 +3389,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3525,8 +3437,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3575,8 +3485,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3625,8 +3533,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3675,8 +3581,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3754,8 +3658,6 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -3765,6 +3667,16 @@
                   </Cads>
                 </FileArmAds>
               </FileOption>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>RTT</GroupName>
+          <Files>
+            <File>
+              <FileName>SEGGER_RTT.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\..\..\RTT\SEGGER_RTT.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3804,8 +3716,6 @@
                 <uSurpInc>2</uSurpInc>
                 <uC99>2</uC99>
                 <useXO>2</useXO>
-                <v6Lang>0</v6Lang>
-                <v6LangP>0</v6LangP>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -3869,8 +3779,6 @@
                 <uSurpInc>2</uSurpInc>
                 <uC99>2</uC99>
                 <useXO>2</useXO>
-                <v6Lang>0</v6Lang>
-                <v6LangP>0</v6LangP>
                 <VariousControls>
                   <MiscControls></MiscControls>
                   <Define></Define>
@@ -3897,6 +3805,98 @@
               </Aads>
             </GroupArmAds>
           </GroupOption>
+          <Files>
+            <File>
+              <FileName>arm_startup_nrf51.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>RTE\Device\nRF51422_xxAC\arm_startup_nrf51.s</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>0</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Aads>
+                    <interw>2</interw>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <thumb>2</thumb>
+                    <SplitLS>2</SplitLS>
+                    <SwStkChk>2</SwStkChk>
+                    <NoWarn>2</NoWarn>
+                    <uSurpInc>2</uSurpInc>
+                    <useXO>2</useXO>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Aads>
+                </FileArmAds>
+              </FileOption>
+            </File>
+            <File>
+              <FileName>system_nrf51.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>RTE\Device\nRF51422_xxAC\system_nrf51.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>0</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>2</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <uC99>2</uC99>
+                    <useXO>2</useXO>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>
