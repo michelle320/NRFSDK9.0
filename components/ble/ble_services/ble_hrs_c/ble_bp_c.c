@@ -102,10 +102,11 @@ static void on_hvx(ble_bp_c_t * p_ble_bp_c, const ble_evt_t * p_ble_evt)
 			
 			bp_log("hvx:len=0x%x\r\n",(p_ble_evt->evt.gattc_evt.params.hvx.len));
 			int ii;
-			//for (ii=0;ii<p_ble_evt->evt.gattc_evt.params.hvx.len;ii++){
-				for (ii=0;ii<4;ii++){
-					ble_bp_c_evt.params.bp.bp_value[ii] = p_ble_evt->evt.gattc_evt.params.hvx.data[index+ii];
-			    bp_log("hvx:index=%d, val=%d\r\n",index+ii,p_ble_evt->evt.gattc_evt.params.hvx.data[index+ii]);
+			for (ii=0;ii<p_ble_evt->evt.gattc_evt.params.hvx.len;ii++){
+				//for (ii=0;ii<4;ii++){
+					ble_bp_c_evt.params.bp.bp_value[ii] = p_ble_evt->evt.gattc_evt.params.hvx.data[index];
+				  index++;
+			    //bp_log("hvx:index=%d, val=%d\r\n",index+ii,p_ble_evt->evt.gattc_evt.params.hvx.data[index+ii]);
 			}
 			 //bp_log("hvx:index=%d, val=0x%x\r\n",index+len,p_ble_evt->evt.gattc_evt.params.hvx.data[index+len]);
 			bp_log("Finish\r\n");

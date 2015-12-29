@@ -199,8 +199,12 @@ static uint16_t                          m_conn_handle_peripheral = BLE_CONN_HAN
 static ble_hrs_t                         m_hrs;                                               /**< Structure used to identify the heart rate service. */
 static ble_rscs_t                        m_rscs;                                              /**< Structure used to identify the running speed and cadence service. */
 
+
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HEART_RATE_SERVICE,         BLE_UUID_TYPE_BLE},
                                    {BLE_UUID_RUNNING_SPEED_AND_CADENCE,  BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
+
+																	 
+																	 
 
 
 /**@brief Function for asserts in the SoftDevice.
@@ -219,11 +223,13 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
     app_error_handler(0xDEADBEEF, line_num, p_file_name);
 }
 
+char bpsval[19];
+volatile bool bps_status;
 uint32_t ind = 0;
 void uart_event_handle(app_uart_evt_t * p_event)
 {
 		static uint8_t data_array[20];
-		char temp[20];
+		char temp[40];
 		char response[20];
 		//SEGGER_RTT_WriteString(0, "uart_event_handle\n");
 	
@@ -243,6 +249,24 @@ void uart_event_handle(app_uart_evt_t * p_event)
 					strcpy(response,"OK");
 					for (uint32_t i = 0; i < 2; i++) {
 									while(app_uart_put(response[i]) != NRF_SUCCESS);
+					}
+					while(app_uart_put('\n') != NRF_SUCCESS);
+					ind = 0;
+					break;
+					
+				}
+				
+				if ((data_array[ind - 3] == 'B')&&(data_array[ind - 2] == 'P')&&(data_array[ind - 1] == 'S'))
+				{
+					SEGGER_RTT_WriteString(0, "Michelle: Got BPS!\n");
+					
+					//strcpy(response,"OK");
+					
+					//sprintf(&temp[i*2],"%02X",(uint8_t)(bpsval[i]>>8));
+					for (uint32_t i = 0; i < 19; i++) {
+									sprintf(&temp[i],"%02X",(uint8_t)(bpsval[i]));
+									while(app_uart_put(temp[i]) != NRF_SUCCESS);
+									while(app_uart_put(temp[i+1]) != NRF_SUCCESS);
 					}
 					while(app_uart_put('\n') != NRF_SUCCESS);
 					ind = 0;
@@ -289,6 +313,11 @@ void uart_event_handle(app_uart_evt_t * p_event)
 			
 			case APP_UART_TX_EMPTY:
 					SEGGER_RTT_WriteString(0, "APP_UART_TX_EMPTY\n");
+					UNUSED_VARIABLE(app_uart_get(&data_array[ind]));
+					sprintf(&temp[0],"index = %d %x [%c] \n", ind, data_array[ind], data_array[ind]);
+			
+					SEGGER_RTT_WriteString(0, &temp[0]);
+					ind++;
 				break;
 			
 			default:
@@ -1047,6 +1076,7 @@ void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt)
         case BLE_BP_C_EVT_GOT_VAL:
 					{
 						char temp[20];
+						char response[20];
 					 	//printf("BLE_BP_C_EVT_GOT_VAL\r\n");
 						//printf("Hi mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[1]);
 						//printf("Lo mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[3]);
@@ -1054,12 +1084,21 @@ void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt)
 						SEGGER_RTT_WriteString(0, &temp[0]);
 						sprintf(&temp[0],"Lo mmHG = %d \n",p_bp_c_evt->params.bp.bp_value[3]);
 						SEGGER_RTT_WriteString(0, &temp[0]);
+						sprintf(&temp[0],"HR = %d \n",p_bp_c_evt->params.bp.bp_value[14]);
+						SEGGER_RTT_WriteString(0, &temp[0]);
+						
+						for (int i=0;i < 19; i++) {
+							bpsval[i] = p_bp_c_evt->params.bp.bp_value[i];
+						}
+						
+						
 					break;
 				 }
         case BLE_BP_C_EVT_DISCONNECTED:
 				{
 						//printf("BLE_BP_C_EVT_DISCONNECTED\r\n");
 						SEGGER_RTT_WriteString(0, "BLE_BP_C_EVT_DISCONNECTED\n");
+						NVIC_SystemReset();
 					  break;
 				}
         default:
