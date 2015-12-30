@@ -13,7 +13,6 @@
 
 static ble_bp_c_t * mp_ble_bp_c;
 
-
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #define BLE_CCCD_VALUE_LEN                                       2          /**< The length of a CCCD value. */
 #define WRITE_MESSAGE_LENGTH   BLE_CCCD_VALUE_LEN 
@@ -85,15 +84,15 @@ static void tx_buffer_process(void)
 extern void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt);
 static void on_hvx(ble_bp_c_t * p_ble_bp_c, const ble_evt_t * p_ble_evt)
 {
-	bp_log("p_ble_evt->evt.gattc_evt.params.hvx.handle=0x%x\r\n",p_ble_evt->evt.gattc_evt.params.hvx.handle);
+		bp_log("p_ble_evt->evt.gattc_evt.params.hvx.handle=0x%x\r\n",p_ble_evt->evt.gattc_evt.params.hvx.handle);
 	  bp_log("p_ble_hrs_c->bp_CUFF_handle=0x%x\r\n",p_ble_bp_c->bp_CUFF_handle);
 	  bp_log("p_ble_hrs_c->bp_MEA_handle=0x%x\r\n",p_ble_bp_c->bp_MEA_handle);
 	
     p_ble_bp_c->bp_CUFF_handle = BLE_CUFF_HANDLE;
-	 p_ble_bp_c->bp_MEA_handle = BLE_BP_MEASUREMENT_HANDLE;
+		p_ble_bp_c->bp_MEA_handle = BLE_BP_MEASUREMENT_HANDLE;
     // Check if this is a heart rate notification.
     //if (p_ble_evt->evt.gattc_evt.params.hvx.handle == p_ble_bp_c->bp_CUFF_handle)
-			 if (p_ble_evt->evt.gattc_evt.params.hvx.handle == p_ble_bp_c->bp_MEA_handle)
+		if (p_ble_evt->evt.gattc_evt.params.hvx.handle == p_ble_bp_c->bp_MEA_handle)
     {
         ble_bp_c_evt_t ble_bp_c_evt;
         uint32_t        index = 0;

@@ -1444,6 +1444,7 @@ static void services_init(void)
     ble_rscs_init_t rscs_init;
     uint8_t        body_sensor_location;
 
+		
     // Initialize Heart Rate Service.
     body_sensor_location = BLE_HRS_BODY_SENSOR_LOCATION_FINGER;
 
@@ -1593,6 +1594,11 @@ int main(void)
     uart_init();
     //printf("Relay Example\r\n");
 		SEGGER_RTT_WriteString(0, "Hello main!\n");
+	
+		//Reset beacon
+		for (int i=0;i<19;i++)
+			bpsval[i]=0;
+	
     ble_stack_init();
     device_manager_init(erase_bonds);
     db_discovery_init();
