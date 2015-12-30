@@ -973,6 +973,7 @@ void bp_c_evt_handler(ble_bp_c_t * p_bp_c, ble_bp_c_evt_t * p_bp_c_evt)
 					 	printf("BLE_BP_C_EVT_GOT_VAL\r\n");
 						printf("Hi mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[1]);
 						printf("Lo mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[3]);
+						printf("Heart mmHG: %d\r\n", p_bp_c_evt->params.bp.bp_value[14]);
 					break;
 				 }
 

@@ -25,7 +25,7 @@
 
 
 
-#define bp_log //printf
+#define bp_log printf
 typedef enum
 {
     BLE_BP_C_EVT_DISCOVERY_COMPLETE = 1,  /**< Event indicating that the Heart Rate Service has been discovered at the peer. */
